@@ -1,0 +1,70 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata: 
+  name: account-deployment
+spec:
+  # A deployment's specification really only 
+  # has a few useful options
+  
+  # 1. How many copies of each pod do we want?
+  replicas: 1
+
+  # 3. Which pods are managed by this deployment?
+  selector:
+    # This must match the labels we set on the pod!
+    matchLabels:
+      app: account 
+  
+  # This template field is a regular pod configuration 
+  # nested inside the deployment spec
+  template:
+    metadata:
+      # Set labels on the pod.
+      # This is used in the deployment selector.
+      labels:
+        app: account 
+    spec:
+      imagePullSecrets:
+        - name: regcred      
+      containers:
+        - name: account 
+          image: nouveaulabs/vc_account:LATEST
+          imagePullPolicy: Always
+          ports:
+                  - containerPort: 4002
+                    protocol: TCP           
+          env:
+            - name: DB_SVC_URL  
+              value: "http://db-service:4000/db_svc/v1/meeting" 
+            - name: DB_SVC_USER_URL
+              value: "http://db-service:4000/db_svc/v1/user"
+            - name: AUTH_URL 
+              value: "http://auth:4001/api/v1"
+            - name: POPULATE_MEETINGS_INTERVAL_SEC
+              value: "900"
+            - name: EMAIL_PASSWORD
+              value: "I@mgod456"
+            - name: SENDER_EMAIL
+              value: "no-reply@dolphinvc.com"
+            - name: EMAIL_SERVER
+              value: "smtpout.secureserver.net"
+            - name: EMAIL_PORT
+              value: "587"
+            - name: PORT  
+              value: "4002"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: account
+  labels:
+    app: account
+spec:
+  type: NodePort
+  ports:
+  - port: 4002
+    targetPort: 4002
+    nodePort: 30030 
+  selector:
+    app: account
+
