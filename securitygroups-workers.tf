@@ -2,7 +2,7 @@
 resource "aws_security_group" "demo-node" {
   name        = "terraform-eks-demo-node"
   description = "Security group for all nodes in the cluster"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = aws_vpc.demo.id
 
   egress {
     from_port   = 0
